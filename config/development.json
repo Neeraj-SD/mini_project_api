@@ -1,0 +1,7 @@
+{
+    "dbConnectionString":"mongodb+srv://<username>:<password>@cluster0.yxgwh.mongodb.net/CambuzzRennovex?retryWrites=true&w=majority",
+    "mongoPass":{
+        "username":"",
+        "password":""
+    }
+}

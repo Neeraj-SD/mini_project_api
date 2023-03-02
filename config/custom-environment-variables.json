@@ -1,0 +1,7 @@
+{
+    "mongoPass":{
+        "username":"mongoUsername",
+        "password":"mongoPassword"
+    },
+    "jwtPrivateKey":"cambuzz_jwtPrivateKey"
+}
