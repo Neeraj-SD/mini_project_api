@@ -3,5 +3,5 @@
         "username":"mongoUsername",
         "password":"mongoPassword"
     },
-    "jwtPrivateKey":"cambuzz_jwtPrivateKey"
+    "jwtPrivateKey":"chat_jwtPrivateKey"
 }

@@ -1,104 +1,86 @@
-const mongoose =  require('mongoose');
-const Joi = require('joi');
-const { ObjectID } = require('mongodb');
-Joi.objectId = require('joi-objectid')(Joi);
-const jwt = require('jsonwebtoken');
-const config = require('config');
+const mongoose = require('mongoose')
+const Joi = require('joi')
+Joi.objectId = require('joi-objectid')(Joi)
+const jwt = require('jsonwebtoken')
+const config = require('config')
+const _ = require('lodash')
 
+const userSchema = mongoose.Schema({
+    name: { type: String, required: true, minlength: 3, maxlength: 255 },
+    picture: { type: String, minlength: 3, maxlength: 255 },
+    // nickName:{ type:String, required:true, minlength:3, maxlength:255 },
+    // age:{ type:Number, required:true },
+    // interests:[{type:mongoose.Schema.Types.ObjectId, ref: 'Interest'}],
+    // avatar:{ type:mongoose.Schema.Types.ObjectId, ref:'UserAvatar'},
+    // gender:{ 
+    //     type:String, 
+    //     required:true,
+    //     enum:['male','female','lgbtq'],
+    // },
+    socket_id: { type: String, minlength: 3, maxlength: 255, default: 'default' },
+    email: { type: String, required: true, minlength: 3, maxlength: 255, unique: true },
+    // domain:{ 
+    //     type:String,
+    //     required:true,
+    //     enum:['public', 'campus']
+    // },
+    // //TODO:Add validator, if domain == campus, required
+    // campus:{ type:mongoose.Schema.Types.ObjectId, ref:'Campus'},
+    timeStamp: { type: Date, default: Date.now },
+    fcmToken: { type: String, default: '', maxlength: 500 },
+    // isAdmin: { type: Boolean, default: false },
+    // isBusiness: { type: Boolean, default: false },
+    google_uid: { type: String, minlength: 3, maxlength: 100, required: true }
+})
 
+const User = mongoose.model('User', userSchema)
 
 const userJoiSchema = Joi.object({
-    email: Joi.string().required().max(50).min(5),
-    userName: Joi.string().required().max(20).min(3),
-    name: Joi.string().required().max(20).min(3),
-    skills: Joi.array().items(Joi.objectId()),
-    bio:Joi.string().max(100),
-    fileType:Joi.string().min(2).max(5),
-    uid:Joi.string()
-});
+    name: Joi.string().required().min(3).max(255),
+    // nickName: Joi.string().required().min(3).max(255),
+    // age: Joi.number().required(),
+    // interests: Joi.array().items(Joi.objectId()),
+    // avatar: Joi.objectId(),
+    // gender: Joi.string().valid('male', 'female', 'lgbtq').required(),
+    // domain: Joi.string().valid('public', 'campus').required(),
+    // campus: Joi.objectId().required(),
+})
 
-
-const userMongooseSchema = new mongoose.Schema({
-    email:{
-        type:String,
-        required:true,
-        maxlength:50,
-        unique:true,
-        dropDups: true
-    },
-    uid:{
-        type:String,
-        required:true
-    },
-    created:{
-        type:Date,
-        default:Date.now
-    },
-    userName:{
-        type:String,
-        maxlength:20,
-        minlength:3,
-        required:true,
-        unique:true,
-        dropDups: true
-    },
-    name:{
-        type:String,
-        maxlength:20,
-        minlength:3,
-        required:true
-    },
-    image:{
-        type:String,
-    },
-    coverImage:{
-        type:String,
-    },
-    bio:{
-        type:String,
-        maxlength:100,
-    },
-    skills:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            require:true,
-            ref:'Skill'
-        }
-    ],
-    blocked:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            require:true,
-            ref:'User'
-        }
-    ],
-    following:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            require:true,
-            ref:'User'
-        }
-    ],
-    communities:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            require:true,
-            ref:'Community'
-        }
-    ],
-    achievements:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            require:true,
-            ref:'Achievement'
-        }
-    ]
-});
-
-userMongooseSchema.methods.generateJwtKey = function(){
-    const token = jwt.sign({_id:this._id, email:this.email}, config.get('jwtPrivateKey'));
-    return token;
+const validate = function (body) {
+    return userJoiSchema.validate(body)
 }
 
-module.exports.userJoiSchema = userJoiSchema;
-module.exports.userMongooseSchema = userMongooseSchema;
+User.prototype.generateAuthToken = function () {
+    const token = jwt.sign({ id: this.id, isAdmin: this.isAdmin, domain: this.domain, campus: this.campus }, config.get('jwtPrivateKey'))
+    return token
+}
+
+//TODO: This doesnt work
+User.prototype.getSafeUser = async function () {
+    await this.populate('interests avatar campus');
+    return _.get(this, 'name nickName gender domain campus interests avatar email age'.split())
+}
+
+User.prototype.getUserWithoutToken = async function () {
+    // await this.populate('interests avatar')
+    return {
+        _id: this.id,
+        name: this.name,
+        email: this.email,
+        picture: this.picture,
+    }
+}
+
+User.prototype.getAnonymousUser = async function () {
+    // await this.populate('interests avatar')
+    return {
+        _id: this.id,
+        name: this.name,
+        email: this.email,
+        picture: this.picture,
+        'x-auth-token': this.generateAuthToken()
+    }
+}
+
+exports.User = User
+exports.validate = validate
