@@ -1,10 +1,6 @@
 const express = require('express')
 const router = express.Router()
 
-const messages = require('./messages');
-
-router.use('/messages', messages);
-
 const { User, validate: validateUser } = require('../models/user');
 const auth = require('../middlewares/auth');
 const validObjectId = require('../middlewares/validObjectId');
@@ -47,6 +43,26 @@ router.get('/:id', [auth, validObjectId('id')], async (req, res) => {
 
     res.status(200).send(await user.getAnonymousUser())
 });
+
+router.post('/', async (req, res) => {
+
+    const { error, value } = validateUser(req.body)
+    if (error) return res.status(400).send(error['details'][0]['message'])
+
+    let user = await User.findOne({ email: value.email });
+    if (user) return res.status(404).send('User already exists.');
+
+    user = User({
+        name: value.name,
+        email: value.email,
+        googleUid: 'Custom Created',
+    })
+
+    await user.save()
+
+    res.status(201).send({ user, token: user.generateAuthToken() })
+
+})
 
 //TODO: Update profile
 router.put('/', auth, async (req, res) => {

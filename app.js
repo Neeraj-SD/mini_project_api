@@ -16,7 +16,6 @@ require('./startup/routes')(app);
 require('./startup/db')();
 // const firebase_configuration = require('./startup/firebase-configuration');
 const { User } = require('./models/user');
-// require('./startup/redis-client').connectClient();
 
 
 if (!config.get('jwtPrivateKey')) {

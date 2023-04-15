@@ -7,43 +7,24 @@ const _ = require('lodash')
 
 const userSchema = mongoose.Schema({
     name: { type: String, required: true, minlength: 3, maxlength: 255 },
-    picture: { type: String, minlength: 3, maxlength: 255 },
-    // nickName:{ type:String, required:true, minlength:3, maxlength:255 },
-    // age:{ type:Number, required:true },
-    // interests:[{type:mongoose.Schema.Types.ObjectId, ref: 'Interest'}],
-    // avatar:{ type:mongoose.Schema.Types.ObjectId, ref:'UserAvatar'},
-    // gender:{ 
-    //     type:String, 
-    //     required:true,
-    //     enum:['male','female','lgbtq'],
-    // },
-    socket_id: { type: String, minlength: 3, maxlength: 255, default: 'default' },
+    image: { type: String, minlength: 3, maxlength: 255 },
     email: { type: String, required: true, minlength: 3, maxlength: 255, unique: true },
-    // domain:{ 
-    //     type:String,
-    //     required:true,
-    //     enum:['public', 'campus']
-    // },
-    // //TODO:Add validator, if domain == campus, required
-    // campus:{ type:mongoose.Schema.Types.ObjectId, ref:'Campus'},
+    isCustomer: { type: Boolean, default: true },
     timeStamp: { type: Date, default: Date.now },
     fcmToken: { type: String, default: '', maxlength: 500 },
-    // isAdmin: { type: Boolean, default: false },
-    // isBusiness: { type: Boolean, default: false },
-    google_uid: { type: String, minlength: 3, maxlength: 100, required: true }
+    googleUid: { type: String, minlength: 3, maxlength: 100, required: true }
 })
 
 const User = mongoose.model('User', userSchema)
 
 const userJoiSchema = Joi.object({
     name: Joi.string().required().min(3).max(255),
-    // nickName: Joi.string().required().min(3).max(255),
-    // age: Joi.number().required(),
-    // interests: Joi.array().items(Joi.objectId()),
-    // avatar: Joi.objectId(),
-    // gender: Joi.string().valid('male', 'female', 'lgbtq').required(),
-    // domain: Joi.string().valid('public', 'campus').required(),
-    // campus: Joi.objectId().required(),
+    image: Joi.string().min(3).max(500),
+    email: Joi.string().required().min(3).max(500),
+    isCustomer: Joi.boolean(),
+    fcmToken: Joi.string().min(3).max(500),
+    googleUid: Joi.string().required().min(3).max(500),
+
 })
 
 const validate = function (body) {
@@ -51,7 +32,7 @@ const validate = function (body) {
 }
 
 User.prototype.generateAuthToken = function () {
-    const token = jwt.sign({ id: this.id, isAdmin: this.isAdmin, domain: this.domain, campus: this.campus }, config.get('jwtPrivateKey'))
+    const token = jwt.sign({ id: this.id, isCustomer: this.isCustomer }, config.get('jwtPrivateKey'))
     return token
 }
 
