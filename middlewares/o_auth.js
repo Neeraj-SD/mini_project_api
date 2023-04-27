@@ -15,7 +15,7 @@ module.exports = async function (req, res, next) {
         const ticket = await client.verifyIdToken({
             idToken: req.header('x-auth-google-token'),
             // idToken: id_token,
-            audience: [CLIENT_ID_APP],  // Specify the CLIENT_ID of the app that accesses the backend
+            // audience: [CLIENT_ID_APP],  // Specify the CLIENT_ID of the app that accesses the backend
             // Or, if multiple clients access the backend:
             //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
         });

@@ -17,11 +17,11 @@ const jobSchema = mongoose.Schema({
     image: { type: String, required: true, minlength: 1, maxlength: 255 },
     description: { type: String, required: true, minlength: 1, maxlength: 255 },
     timeStamp: { type: Date, default: Date.now },
-    customerRating: { type: Number, enum: [1, 2, 3, 4, 5], default: 1 },
-    status: { type: Number, enum: ['waiting', 'accepted', 'rejected', 'completed', 'cancelled'], default: 'waiting' },
+    customerRating: { type: Number, enum: [0, 1, 2, 3, 4, 5], default: 0 },
+    status: { type: String, enum: ['waiting', 'accepted', 'rejected', 'completed', 'cancelled'], default: 'waiting' },
     bids: { type: Array, ref: 'Bid' },
     acceptedBid: { type: mongoose.Schema.Types.ObjectId, ref: 'Bid' },
-    workerId: { type: mongoose.Schema.Types.objectId, ref: 'User' }
+    workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     // status: { type: String, enum: ['delivered', 'read', 'sent'], default: 'sent' }
 });
 
@@ -39,5 +39,6 @@ const validate = function (body) {
     return jobJoiSchema.validate(body);
 }
 
+exports.Bid = Bid;
 exports.Job = Job;
 exports.validate = validate;

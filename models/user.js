@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
     image: { type: String, minlength: 3, maxlength: 255 },
     email: { type: String, required: true, minlength: 3, maxlength: 255, unique: true },
     isCustomer: { type: Boolean, default: true },
+    isComplete: { type: Boolean, default: false },
     timeStamp: { type: Date, default: Date.now },
     fcmToken: { type: String, default: '', maxlength: 500 },
     googleUid: { type: String, minlength: 3, maxlength: 100, required: true }
@@ -59,6 +60,8 @@ User.prototype.getAnonymousUser = async function () {
         name: this.name,
         email: this.email,
         picture: this.picture,
+        isComplete: this.isComplete,
+        isCustomer: this.isCustomer,
         'x-auth-token': this.generateAuthToken()
     }
 }
